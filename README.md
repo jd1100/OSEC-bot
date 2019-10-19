@@ -1,1 +1,1 @@
-# OSEC-bot-
+# OSEC-bot
