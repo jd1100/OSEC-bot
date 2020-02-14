@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 import discord
 from discord.ext import commands
 import re
@@ -29,7 +28,7 @@ try:
 	token = file_contents[0].strip()
 except:
 	print("[ERROR] no config file found. Exiting..")
-
+	exit()
 
 cmd_prefix = ("?", "!")
 
