@@ -3,13 +3,17 @@ import json
 import re
 
 #Account info
-config_file = open('config.txt', 'r')
-file_contents = config_file.readlines()
+try:
+	config_file = open('config.txt', 'r')
+	file_contents = config_file.readlines()
 
-key = file_contents[1].strip()
-username = file_contents[2].strip()
+	key = file_contents[1].strip()
+	username = file_contents[2].strip()
 
-auth = (username, key)
+	auth = (username, key)
+except:
+	pass
+	
 headers = {'Content-Type': 'application/json'}
 
 # Members list URL

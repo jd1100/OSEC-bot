@@ -6,9 +6,36 @@ import os
 import asyncio
 import mailchimp
 import datetime
+import os.path
+
+# check for config file
+try:
+	config_file = open('config.txt', 'r')
+	file_contents = config_file.readlines()
+	config_file.close()
+	token = file_contents[0].strip()
+except:
+	print("[ERROR] no config file found. Exiting..")
+	exit()
 
 # grab user n#
-unf_id = input("please enter unf id: ")
+while(True):
+	unf_id = input("please enter the UNF id that will be used for this bot: ") 
+	if re.match(r"n\d{8}", unf_id, re.IGNORECASE):
+		break
+	else:
+		print("invalid")
+		continue
+
+# ssh key location
+while(True):
+	ssh_key_path = input("please enter the *full* path to your ssh key: ") 
+	if os.path.isfile(ssh_key_path):
+		break
+	else:
+		print("invalid path. No file found")
+		continue
+		
 
 ### grab api information for mailchimp/discord if no config file given give error msg ###
 # 
@@ -97,9 +124,13 @@ async def on_message(message):
 		# Grab user student id 
 		student_id = reg[0]
 
-		# Use ssh key to circumvent the password prompt from osprey server
-		lookup = subprocess.run(['ssh', '-i','~/.ssh/osprey-key', 'n01177471@osprey.unf.edu', 'getent', 'passwd', student_id], stdout=subprocess.PIPE).stdout.decode('utf-8')
-		print(lookup)
+		unf_login = unf_id + "@osprey.unf.edu"
+		try:
+			# Use ssh key to circumvent the password prompt from remote server
+			lookup = subprocess.run(['ssh', '-i',ssh_key_path, unf_login, 'getent', 'passwd', student_id], stdout=subprocess.PIPE).stdout.decode('utf-8')
+			print(lookup)
+		except:
+			print("error loging into UNF server")
 
 		# Student group = 100
 		# Faculty group = 
