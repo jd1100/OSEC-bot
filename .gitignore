@@ -1,4 +1,6 @@
 ## ignore config.txt
 /config.txt
 
+## ignore log file
+/log.txt
 
