@@ -11,5 +11,5 @@ Only authorized personel are permitted to run the bot. Without proper authorizat
 if authorized to run the bot on your machine, you will need to manually generate an ssh key for the remote server hosted by UNF in order to automate the verification process.
 
 ## Dependencies
-https://github.com/Rapptz/discord.py
-https://requests.readthedocs.io/en/master/
+* https://github.com/Rapptz/discord.py
+* https://requests.readthedocs.io/en/master/
