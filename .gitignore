@@ -4,3 +4,5 @@
 ## ignore log file
 /log.txt
 
+## ignore __pycache__
+__pycache__
