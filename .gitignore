@@ -6,3 +6,6 @@
 
 ## ignore __pycache__
 __pycache__
+
+## ignore .python-version
+/.python-version
