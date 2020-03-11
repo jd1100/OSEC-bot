@@ -1,3 +1,5 @@
+![OSEC][osec_logo-discord_black.png]
+
 # OSEC-bot
 Discord bot built to verify members as *current* UNF students.
 
