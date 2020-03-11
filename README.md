@@ -1,5 +1,6 @@
-<div style="text-align-center"><img src="https://github.com/DLJ42/OSEC-bot/blob/master/osec_logo-discord_black.png" /></div>
-
+<p align="center"> 
+<img src="https://github.com/DLJ42/OSEC-bot/blob/master/osec_logo-discord_black.png">
+</p>
 # OSEC-bot
 Discord bot built to verify members as *current* UNF students.
 
