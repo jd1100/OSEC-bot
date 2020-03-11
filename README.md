@@ -1,4 +1,4 @@
-![OSEC][https://github.com/DLJ42/OSEC-bot/osec_logo-discord_black.png]
+![OSEC][https://github.com/DLJ42/OSEC-bot/blob/master/osec_logo-discord_black.png]
 
 # OSEC-bot
 Discord bot built to verify members as *current* UNF students.
