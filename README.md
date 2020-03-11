@@ -17,3 +17,6 @@ if authorized to run the bot on your machine, you will need to manually generate
 ## Dependencies
 * https://github.com/Rapptz/discord.py
 * https://requests.readthedocs.io/en/master/
+
+## OSEC Logo Credit
+https://github.com/rothso/
