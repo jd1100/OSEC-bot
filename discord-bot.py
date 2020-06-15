@@ -7,6 +7,7 @@ import asyncio
 import mailchimp
 import datetime
 import os.path
+import sys
 
 # check for config file
 try:
@@ -18,23 +19,27 @@ except:
 	print("[ERROR] no config file found. Exiting..")
 	exit()
 
-# grab user n#
-while(True):
-	unf_id = input("please enter the UNF id that will be used for this bot: ") 
-	if re.match(r"n\d{8}", unf_id, re.IGNORECASE):
-		break
-	else:
-		print("invalid")
-		continue
+# Check for command arguments before prompting user for input !
+try:
+	if sys.argv[1] and sys.argv[2]
+except:
+	# grab user n#
+	while(True):
+		unf_id = input("please enter the UNF id that will be used for this bot: ") 
+		if re.match(r"n\d{8}", unf_id, re.IGNORECASE):
+			break
+		else:
+			print("invalid")
+			continue
 
-# ssh key location
-while(True):
-	ssh_key_path = input("please enter the *full* path to your ssh key: ") 
-	if os.path.isfile(ssh_key_path):
-		break
-	else:
-		print("invalid path. No file found")
-		continue
+	# ssh key location
+	while(True):
+		ssh_key_path = input("please enter the *full* path to your ssh key: ") 
+		if os.path.isfile(ssh_key_path):
+			break
+		else:
+			print("invalid path. No file found")
+			continue
 		
 
 ### grab api information for mailchimp/discord if no config file given give error msg ###
