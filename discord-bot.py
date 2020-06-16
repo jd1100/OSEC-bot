@@ -20,8 +20,17 @@ except:
 	exit()
 
 # Check for command arguments before prompting user for input !
+"""
+[script.py arg1 arg2]
+
+arg1 = unf_id
+arg2 = ssh_key_path  
+
+"""
 try:
-	if sys.argv[1] and sys.argv[2]
+	if sys.argv[1] and sys.argv[2]:
+		unf_id = sys.argv[1]
+		ssh_key_path = sys.argv[2]
 except:
 	# grab user n#
 	while(True):
@@ -43,15 +52,16 @@ except:
 		
 
 ### grab api information for mailchimp/discord if no config file given give error msg ###
-# 
-# ***config file contents will be read in assuming the file format below:***
-# if information is not presented in this order, bot wont work
-#    
-# [discord api key]
-# [mailchimp api key]
-# [mailchimp username]
-#
-# #
+
+"""
+config file contents will be read in assuming the file format below:
+
+NOTE: if information is not presented in this order, bot wont work
+    
+[discord api key]
+[mailchimp api key]
+[mailchimp username]
+"""
 
 try:
 	config_file = open('config.txt', 'r')
