@@ -8,6 +8,8 @@ import mailchimp
 import datetime
 import os.path
 import sys
+import requests
+from enum import Enum
 
 # check for config file
 try:
@@ -19,12 +21,35 @@ except:
 	print("[ERROR] no config file found. Exiting..")
 	exit()
 
+
+class StudentResult(Enum):
+	NOT_FOUND = 0
+	STUDENT = 1
+	FACULTY = 2
+
+def is_student(n_number):
+	user_url = "https://login.microsoftonline.com/common/GetCredentialType"
+	faculty_url = "https://webapps.unf.edu/faculty/bio/api/v1/faculty?searchLimit=1&searchTerm="
+	user_response = requests.post(user_url, json={"username": f"{n_number}@unf.edu"}).json()
+	print(user_response)
+	is_valid_user = user_response["IfExistsResult"] == 0
+	if not is_valid_user:
+		return StudentResult.NOT_FOUND
+	faculty_response = requests.get(f"{faculty_url}{n_number}").json()
+	if (len(faculty_response["payload"]) > 0) and (faculty_response["payload"][0]["isFaculty"] == True):
+		return StudentResult.FACULTY
+	return StudentResult.STUDENT
+
+
+
 # Check for command arguments before prompting user for input !
 """
 [script.py arg1 arg2]
 
 arg1 = unf_id
 arg2 = ssh_key_path  
+
+"""
 
 """
 try:
@@ -50,6 +75,8 @@ except:
 			print("invalid path. No file found")
 			continue
 		
+"""
+
 
 ### grab api information for mailchimp/discord if no config file given give error msg ###
 
@@ -57,24 +84,16 @@ except:
 config file contents will be read in assuming the file format below:
 
 NOTE: if information is not presented in this order, bot wont work
-    
+
 [discord api key]
 [mailchimp api key]
 [mailchimp username]
 """
 
-try:
-	config_file = open('config.txt', 'r')
-	file_contents = config_file.readlines()
-	config_file.close()
-	token = file_contents[0].strip()
-except:
-	print("[ERROR] no config file found. Exiting..")
-	exit()
 
-cmd_prefix = ("?", "!")
-
-client = commands.Bot(command_prefix="!")
+intents = discord.Intents.default()
+intents.message_content = True
+client = commands.Bot(command_prefix="!", intents=intents)
 
 print('my name is OSEC-bot and im here to fuck shit up'.format(client))
 print(discord.__version__)
@@ -103,10 +122,10 @@ async def on_message(message):
 		return
 
 	# set bot logging channel
-	log_channel = await client.fetch_channel("623862015781502976")
+	log_channel = await client.fetch_channel("623860915749781523")
 
 	# set talon role id
-	talon_role = discord.utils.get(message.guild.roles, name="Talon")
+	member_role = discord.utils.get(message.guild.roles, name="Security Intern")
 
 	# log join request message
 	message_log = str(str(message.author) + ": " + message.content)
@@ -133,6 +152,112 @@ async def on_message(message):
 
 	# Grab N# from join-request message
 	reg = re.findall(r'(n\d{8})', message.content, re.IGNORECASE)
+	if reg:
+		student_id = reg[0]
+		print(student_id)
+	else:
+		with open("log.txt", "a") as log:
+			time = str(datetime.datetime.now())
+			log.write(time + " " + message_log + " [ERROR] invalid input\n")
+		await log_channel.send("```" + message_log + "```" + " [ERROR] invalid input")
+		print("[ERROR] invalid input")
+		error_msg = await message.channel.send("[ERROR] invalid input")
+		await asyncio.sleep(15)
+		await message.delete()
+		await error_msg.delete()
+		return
+		
+	student_check = is_student(student_id)
+
+	print(student_check)
+
+	if student_check == StudentResult.STUDENT:
+		# verification success
+		with open("log.txt", "a") as log:
+			time = str(datetime.datetime.now())
+			log.write(time + " " + message_log + " [SUCCESS] new member is a valid UNF student\n")
+			log.write(time + " New OSEC member: " + student_id + "\n")
+
+		await log_channel.send("```" + message_log + "```" + " [SUCCESS] new member is a valid UNF student")
+			
+		print("[SUCCESS] new member is a valid UNF student")
+
+		# assign talon role
+		await message.author.add_roles(member_role)
+			
+		# Send bot response message
+		success_response = await message.channel.send(success_msg)
+
+		# Log student info 
+		print("New OSEC member: " + student_id)
+
+		# add user to mailchimp subscription list
+		#mailchimp_msg = mailchimp.subscribe(student_id, first_name, last_name)
+		#await log_channel.send(mailchimp_msg)
+
+		# STEADY LADS
+		await asyncio.sleep(15)
+
+		# Delete original join-request message
+		await message.delete()
+		print("join request message has been deleted")
+
+		# Delete bot response message
+		await success_response.delete()
+		print("bot response message deleted")
+		return
+	elif student_check == StudentResult.FACULTY:
+		# faculty member
+		with open("log.txt", "a") as log:
+			time = str(datetime.datetime.now())
+			log.write(time + " " + message_log + " [ERROR] faculty member detected\n")
+
+		await log_channel.send("```" + message_log + "```" + " [ERROR] faculty member detected")	
+			
+		print("[ERROR] faculty member detected...")
+		error_msg = await message.channel.send("[ERROR] this n# is not associated with a UNF student account " + message.author.mention)
+		await message.author.send("We are unable to verify your status as a UNF student, if you are a faculty member interested in joining OSEC please contact one of the club officers for further information. We apologize for the inconvenience.")
+		await asyncio.sleep(15)
+		await message.delete()
+		await error_msg.delete()
+		return
+
+	elif student_check == StudentResult.NOT_FOUND:
+		print("[FAILURE] new member is not a valid UNF student")
+		await log_channel.send("[FAILURE] new member is not a valid UNF student")	
+		failure_response = await message.channel.send(failure_msg)
+		await asyncio.sleep(15)
+		# Delete bot response message
+		await failure_response.delete()
+		return
+
+
+	"""
+		# invalid n#
+		with open("log.txt", "a") as log:
+			time = str(datetime.datetime.now())
+			log.write(time + " " + message_log + " [ERROR] invalid N#\n")
+
+		await log_channel.send("```" + message_log + "```" + " [ERROR] invalid N#")	
+
+		print("[ERROR] invalid N#")
+
+		error_msg = await message.channel.send("[ERROR] invalid N# " + message.author.mention)
+
+		await asyncio.sleep(15)
+
+		await message.delete()
+		await error_msg.delete()
+		return
+	"""
+
+
+client.run(token)
+
+
+
+
+"""
 
 	# if an n# is found, check if its found in the UNF AD
 	if reg:
@@ -217,7 +342,7 @@ async def on_message(message):
 			print("[SUCCESS] new member is a valid UNF student")
 
 			# assign talon role
-			await message.author.add_roles(talon_role)
+			await message.author.add_roles(member_role)
 			
 			# Send bot response message
 			success_response = await message.channel.send(success_msg)
@@ -259,5 +384,4 @@ async def on_message(message):
 		await message.delete()
 		await error_msg.delete()
 		return
-
-client.run(token)
+"""
