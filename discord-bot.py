@@ -122,10 +122,10 @@ async def on_message(message):
 		return
 
 	# set bot logging channel
-	log_channel = await client.fetch_channel("623860915749781523")
+	log_channel = await client.fetch_channel("623862015781502976")
 
 	# set talon role id
-	member_role = discord.utils.get(message.guild.roles, name="Security Intern")
+	member_role = discord.utils.get(message.guild.roles, name="Talon")
 
 	# log join request message
 	message_log = str(str(message.author) + ": " + message.content)
