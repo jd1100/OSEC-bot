@@ -9,3 +9,5 @@ __pycache__
 
 ## ignore .python-version
 /.python-version
+
+/.vscode
