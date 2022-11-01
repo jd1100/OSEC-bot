@@ -4,7 +4,7 @@ import re
 import subprocess
 import os
 import asyncio
-import mailchimp
+#import mailchimp
 import datetime
 import os.path
 import sys
