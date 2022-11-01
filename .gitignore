@@ -8,6 +8,6 @@
 __pycache__
 
 ## ignore .python-version
-/.python-version
+.python-version
 
-/.vscode
+.vscode/
