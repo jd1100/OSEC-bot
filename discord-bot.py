@@ -102,6 +102,13 @@ print(discord.__version__)
 # when new member joings server, log it into log file 
 @client.event
 async def on_member_join(member):
+	
+	# get Talon role id
+	new_member_role = discord.utils.get(message.guild.roles, name="Talon")
+	
+	# assign "Talon" role
+	await member.add_roles(new_member_role)
+	
 	print("\n----------------------------------------------------------------\n")
 	print("New member joined: {}".format(member))
 	with open("log.txt", "a") as log:
@@ -182,7 +189,7 @@ async def on_message(message):
 			
 		print("[SUCCESS] new member is a valid UNF student")
 
-		# assign talon role
+		# assign "Security Intern" role
 		await message.author.add_roles(member_role)
 			
 		# Send bot response message
