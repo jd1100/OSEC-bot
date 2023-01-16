@@ -9,6 +9,7 @@ import datetime
 import os.path
 import sys
 import requests
+import logging
 from enum import Enum
 
 ### grab api information for mailchimp/discord if no config file given give error msg ###
@@ -41,6 +42,34 @@ def is_student(n_number):
 		return StudentResult.FACULTY
 	return StudentResult.STUDENT
 
+
+
+
+if __name__ == "__main__":
+
+	# check for config file
+	try:
+		config_file = open('config.txt', 'r')
+		file_contents = config_file.readlines()
+		config_file.close()
+		token = file_contents[0].strip()
+	except:
+		with open("log.txt", "a") as log:
+			time = str(datetime.datetime.now())
+			log.write(time + "[ERROR] no config file found. Exiting..")
+		exit()
+	
+	intents = discord.Intents.default()
+	intents.message_content = True
+	client = commands.Bot(command_prefix="!", intents=intents)
+
+	
+	handler = logging.FileHandler(filename="log.txt", mode="a")
+	logger = logging.getLogger("Custom")
+	logger.setLevel(logging.INFO)
+	logger.addHandler(handler)
+	logger.info("Discord.py version " + discord.__version__)
+	client.run(token, log_handler=handler)
 
 ## Member join ##
 # when new member joings server, log it into log file 
@@ -178,27 +207,3 @@ async def on_message(message):
 		await failure_response.delete()
 		return
 
-
-if __name__ == "__main__":
-
-	# check for config file
-	try:
-		config_file = open('config.txt', 'r')
-		file_contents = config_file.readlines()
-		config_file.close()
-		token = file_contents[0].strip()
-	except:
-		with open("log.txt", "a") as log:
-			time = str(datetime.datetime.now())
-			log.write(time + "[ERROR] no config file found. Exiting..")
-		exit()
-	
-	intents = discord.Intents.default()
-	intents.message_content = True
-	client = commands.Bot(command_prefix="!", intents=intents)
-
-	with open("log.txt", "a") as log:
-		log.write("my name is OSEC-bot and im here to fuck shit up")
-		log.write("Discord.py version " + discord.__version__)
-	
-	client.run(token)
