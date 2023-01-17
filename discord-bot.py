@@ -31,13 +31,13 @@ logger.addHandler(handler)
 
 # check for config file
 try:
-        config_file = open('config.txt', 'r')
-        file_contents = config_file.readlines()
-        config_file.close()
-        token = file_contents[0].strip()
+	config_file = open('config.txt', 'r')
+	file_contents = config_file.readlines()
+	config_file.close()
+	token = file_contents[0].strip()
 except:
-        logger.info(time + " [ERROR] no config file found. Exiting...")
-        exit()
+	logger.info(str(datetime.datetime.now()) + " [ERROR] no config file found. Exiting...")
+	exit()
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -74,10 +74,8 @@ async def on_member_join(member):
 	# assign "Talon" role
 	await member.add_roles(new_member_role)
 
-	with open("log.txt", "a") as log:
-		time = str(datetime.datetime.now())
-		log.write("----------------------------------------------------------------\n")
-		log.write(time + " New member joined: {}\n".format(member))
+	logger.info("----------------------------------------------------------------")
+	logger.info(str(datetime.datetime.now()) + " New member joined: {}".format(member))
 	return
 
 
@@ -106,11 +104,9 @@ async def on_message(message):
 	failure_msg = "invalid N number " + message.author.mention
 	
 	# log join-request message
-	with open("log.txt", "a") as log:
-		time = str(datetime.datetime.now())
-		log.write("----------------------------------------------------------------\n")
-		log.write(time + " @{} user sent a message.\n".format(message.author))
-		log.write(time + " validating new member... @{}\n".format(message.author))
+	logger.info("----------------------------------------------------------------")
+	logger.info(str(datetime.datetime.now()) + " @{} user sent a message.".format(message.author))
+	logger.info(str(datetime.datetime.now()) + " validating new member... @{}".format(message.author))
 
 	await log_channel.send("-------------------------------------------------")	
 	await log_channel.send("**validating new member... @{}**".format(message.author))
@@ -120,9 +116,7 @@ async def on_message(message):
 	if reg:
 		student_id = reg[0]
 	else:
-		with open("log.txt", "a") as log:
-			time = str(datetime.datetime.now())
-			log.write(time + " " + message_log + " [ERROR] invalid input\n")
+		logger.error(str(datetime.datetime.now()) + " " + message_log + " [ERROR] invalid input")
 		await log_channel.send("```" + message_log + "```" + " [ERROR] invalid input")
 
 		error_msg = await message.channel.send("[ERROR] invalid input")
@@ -135,23 +129,19 @@ async def on_message(message):
 
 	if student_check == StudentResult.STUDENT:
 		# verification success
-		with open("log.txt", "a") as log:
-			time = str(datetime.datetime.now())
-			log.write(time + " " + message_log + " [SUCCESS] new member is a valid UNF student\n")
-			log.write(time + " New OSEC member: " + student_id + "\n")
+		logger.info(str(datetime.datetime.now()) + " " + message_log + " [SUCCESS] new member is a valid UNF student")
+		logger.info(str(datetime.datetime.now()) + " New OSEC member: " + student_id)
 
 		await log_channel.send("```" + message_log + "```" + " [SUCCESS] new member is a valid UNF student")
 
 		# assign "Security Intern" role
 		await message.author.add_roles(member_role)
-			
+
 		# Send bot response message
 		success_response = await message.channel.send(success_msg)
 
 		# Log student info
-		with open("log.txt", "a") as log:
-			time = str(datetime.datetime.now())
-			log.write(time + " New OSEC member: " + student_id)
+		logger.info(str(datetime.datetime.now()) + " New OSEC member: " + student_id)
 
 		# add user to mailchimp subscription list
 		#mailchimp_msg = mailchimp.subscribe(student_id, first_name, last_name)
@@ -162,22 +152,16 @@ async def on_message(message):
 
 		# Delete original join-request message
 		await message.delete()
-		with open("log.txt", "a") as log:
-			time = str(datetime.datetime.now())
-			log.write(time + " join request message has been deleted")
+		logger.info(str(datetime.datetime.now()) + " join request message has been deleted")
 
 		# Delete bot response message
 		await success_response.delete()
-		with open("log.txt", "a") as log:
-			time = str(datetime.datetime.now())
-			log.write(time + " bot response message deleted")
-		
+		logger.info(str(datetime.datetime.now()) + " bot response message deleted")
+
 		return
 	elif student_check == StudentResult.FACULTY:
 		# faculty member
-		with open("log.txt", "a") as log:
-			time = str(datetime.datetime.now())
-			log.write(time + " " + message_log + " [ERROR] faculty member detected\n")
+		logger.error(str(datetime.datetime.now()) + " " + message_log + " [ERROR] faculty member detected")
 
 		await log_channel.send("```" + message_log + "```" + " [ERROR] faculty member detected")	
 
@@ -189,9 +173,7 @@ async def on_message(message):
 		return
 
 	elif student_check == StudentResult.NOT_FOUND:
-		with open("log.txt", "a") as log:
-			time = str(datetime.datetime.now())
-			log.write(time + " [FAILURE] new member is not a valid UNF student")
+		logger.warning(str(datetime.datetime.now()) + " [FAILURE] new member is not a valid UNF student")
 		await log_channel.send("[FAILURE] new member is not a valid UNF student")	
 		failure_response = await message.channel.send(failure_msg)
 		await asyncio.sleep(15)
