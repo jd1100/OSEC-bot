@@ -141,6 +141,7 @@ async def on_message(message):
 		error_msg = await message.channel.send("[ERROR] this n# is not associated with a UNF student account " + message.author.mention)
 		await message.author.send("We are unable to verify your status as a UNF student, if you are a faculty member interested in joining OSEC please contact one of the club officers for further information. We apologize for the inconvenience.")
 		await asyncio.sleep(15)
+		# Delete original join-request message
 		await message.delete()
 		await error_msg.delete()
 		return
@@ -150,6 +151,8 @@ async def on_message(message):
 		await log_channel.send("[FAILURE] new member is not a valid UNF student")	
 		failure_response = await message.channel.send(failure_msg)
 		await asyncio.sleep(15)
+		# Delete original join-request message
+		await message.delete()
 		# Delete bot response message
 		await failure_response.delete()
 		return
