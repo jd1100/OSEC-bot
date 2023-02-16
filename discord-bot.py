@@ -11,6 +11,8 @@ import sys
 import requests
 import logging
 from enum import Enum
+import config
+
 
 ### grab api information for mailchimp/discord if no config file given give error msg ###
 
@@ -30,14 +32,20 @@ logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
 # check for config file
-try:
-	config_file = open('config.txt', 'r')
-	file_contents = config_file.readlines()
-	config_file.close()
-	token = file_contents[0].strip()
+# try:
+# 	config_file = open('config.txt', 'r')
+# 	file_contents = config_file.readlines()
+# 	config_file.close()
+# 	token = file_contents[0].strip()
+# except:
+# 	logger.info(str(datetime.datetime.now()) + " [ERROR] no config file found. Exiting...")
+# 	exit()
+
+try: 
+	token = os.getenv("TOKEN")
 except:
-	logger.info(str(datetime.datetime.now()) + " [ERROR] no config file found. Exiting...")
-	exit()
+	logger.info(str(datetime.datetime.now()) + " [ERROR] TOKEN environment variable not found. Exiting...")
+	exit(1)
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -52,19 +60,62 @@ class StudentResult(Enum):
 def is_student(n_number):
 	user_url = "https://login.microsoftonline.com/common/GetCredentialType"
 	faculty_url = "https://webapps.unf.edu/faculty/bio/api/v1/faculty?searchLimit=1&searchTerm="
-	user_response = requests.post(user_url, json={"username": f"{n_number}@unf.edu"}).json()
+
+
+	try:
+		response = requests.post(user_url, json={"username": f"{n_number}@unf.edu"}, timeout=10)
+		user_response = response.json()
+	except response.exceptions.HTTPError as err:
+		logger.error(str(datetime.datetime.now()) + f"[ERROR] HTTP error exception occurred while querying: {err}")
+		exit(1)
+	except response.exceptions.TooManyRedirects:
+		logger.error(str(datetime.datetime.now()) + f"[ERROR] Too many redirects with")
+		exit(1)
+	except response.exceptions.RequestException as err:
+		logger.error(str(datetime.datetime.now()) + f"[ERROR] Requests had RequestException: {err}")
+		exit(1)
+
+	if response and response.status_code != 200:
+		logger.error(f"Response returned a {response.status_code}")
+		exit(1)
+
 
 	is_valid_user = user_response["IfExistsResult"] == 0
 	if not is_valid_user:
+		logger.info(str(datetime.datetime.now()) + f"[INFO] {n_number} is not a student.")
 		return StudentResult.NOT_FOUND
-	faculty_response = requests.get(f"{faculty_url}{n_number}").json()
+	else:
+		logger.info(str(datetime.datetime.now()) + f"[INFO] {n_number} is a student.")
+		return StudentResult.STUDENT
+
+		
+	try:
+		response =	response.get(f"{faculty_url}{n_number}")
+		faculty_response = response.json()
+	except response.exceptions.HTTPError as err:
+		logger.error(str(datetime.datetime.now()) + f"[ERROR] HTTP error exception occurred while querying: {err}")
+		exit(1)
+	except response.exceptions.TooManyRedirects:
+		logger.error(str(datetime.datetime.now()) + f"[ERROR] Too many redirects with")
+		exit(1)
+	except response.exceptions.RequestException as err:
+		logger.error(str(datetime.datetime.now()) + f"[ERROR] Requests had RequestException: {err}")
+		exit(1)
+
+	if response and response.status_code != 200:
+		logger.error(f"Response returned a {response.status_code}")
+		exit(1)
+
 	if (len(faculty_response["payload"]) > 0) and (faculty_response["payload"][0]["isFaculty"] == True):
-		return StudentResult.FACULTY
-	return StudentResult.STUDENT
+		logger.info(str(datetime.datetime.now()) + f"[INFO] {n_number} is faculty.")
+		return StudentResult.FACULTYj
+	else: 
+		logger.info(str(datetime.datetime.now()) + f"[INFO] {n_number} is not a student, nor faculty.")
+		return StudentResult.NOT_FOUND
 
 
 ## Member join ##
-# when new member joings server, log it into log file 
+# when new member joins server, log it into log file 
 @client.event
 async def on_member_join(member):
 	
