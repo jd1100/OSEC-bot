@@ -2,17 +2,6 @@ import requests
 import json
 import re
 
-#Account info
-# try:
-# 	config_file = open('config.txt', 'r')
-# 	file_contents = config_file.readlines()
-
-# 	key = file_contents[1].strip()
-# 	username = file_contents[2].strip()
-
-# 	auth = (username, key)
-# except:
-# 	pass
 try: 
 	token = os.getenv("MAILCHIMP_USERNAME")
 	token = os.getenv("MAILCHIMP_KEY")
