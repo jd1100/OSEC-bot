@@ -1,6 +1,14 @@
 import requests
 import json
 import re
+import os
+import logging
+
+
+handler = logging.FileHandler(filename="mailchimp_log.txt", mode="a")
+logger = logging.getLogger("Custom")
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
 
 try: 
 	token = os.getenv("MAILCHIMP_USERNAME")

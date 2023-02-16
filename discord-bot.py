@@ -11,7 +11,6 @@ import sys
 import requests
 import logging
 from enum import Enum
-import config
 
 
 ### grab api information for mailchimp/discord if no config file given give error msg ###
