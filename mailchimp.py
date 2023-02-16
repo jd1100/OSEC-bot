@@ -1,19 +1,22 @@
 import requests
 import json
 import re
+import os
+import logging
 
-#Account info
-try:
-	config_file = open('config.txt', 'r')
-	file_contents = config_file.readlines()
 
-	key = file_contents[1].strip()
-	username = file_contents[2].strip()
+handler = logging.FileHandler(filename="mailchimp_log.txt", mode="a")
+logger = logging.getLogger("Custom")
+logger.setLevel(logging.INFO)
+logger.addHandler(handler)
 
-	auth = (username, key)
+try: 
+	token = os.getenv("MAILCHIMP_USERNAME")
+	token = os.getenv("MAILCHIMP_KEY")
 except:
-	pass
-	
+	logger.info(str(datetime.datetime.now()) + " [ERROR] mailchimp environment variables not found. Exiting...")
+	exit(1)
+
 headers = {'Content-Type': 'application/json'}
 
 # Members list URL
