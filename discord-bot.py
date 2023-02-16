@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+from discord_bot_utils import is_student, StudentResult, logger, handler
 import re
 import subprocess
 import os
@@ -8,9 +9,7 @@ import asyncio
 import datetime
 import os.path
 import sys
-import requests
 import logging
-from enum import Enum
 
 
 ### grab api information for mailchimp/discord if no config file given give error msg ###
@@ -25,11 +24,6 @@ NOTE: if information is not presented in this order, bot wont work
 [mailchimp username]
 """
 
-handler = logging.FileHandler(filename="log.txt", mode="a")
-logger = logging.getLogger("Custom")
-logger.setLevel(logging.INFO)
-logger.addHandler(handler)
-
 try: 
 	token = os.getenv("TOKEN")
 except:
@@ -39,61 +33,6 @@ except:
 intents = discord.Intents.default()
 intents.message_content = True
 client = commands.Bot(command_prefix="!", intents=intents)
-
-
-class StudentResult(Enum):
-	NOT_FOUND = 0
-	STUDENT = 1
-	FACULTY = 2
-
-def is_student(n_number):
-	user_url = "https://login.microsoftonline.com/common/GetCredentialType"
-	faculty_url = "https://webapps.unf.edu/faculty/bio/api/v1/faculty?searchLimit=1&searchTerm="
-
-
-	try:
-		response = requests.post(user_url, json={"username": f"{n_number}@unf.edu"}, timeout=10)
-		user_response = response.json()
-		is_valid_user = user_response["IfExistsResult"] == 0
-
-		response =	requests.get(f"{faculty_url}{n_number}")
-		faculty_response = response.json()
-
-		if not is_valid_user:
-			return StudentResult.NOT_FOUND
-		else:
-			if (len(faculty_response["payload"]) > 0) and (faculty_response["payload"][0]["isFaculty"] == True):
-				logger.info(str(datetime.datetime.now()) + f"[INFO] {n_number} is faculty.")
-				return StudentResult.FACULTY
-			else:
-				logger.info(str(datetime.datetime.now()) + f"[INFO] {n_number} is a student.")
-				return StudentResult.STUDENT
-
-
-	except Exception as err:
-		logger.error(str(datetime.datetime.now()) + f"{err}")
-		return StudentResult.NOT_FOUND
-
-
-
-		
-	# try:
-	# 	response =	response.get(f"{faculty_url}{n_number}")
-	# 	faculty_response = response.json()
-	# except response.exceptions.HTTPError as err:
-	# 	logger.error(str(datetime.datetime.now()) + f"[ERROR] HTTP error exception occurred while querying: {err}")
-	# 	exit(1)
-	# except response.exceptions.TooManyRedirects:
-	# 	logger.error(str(datetime.datetime.now()) + f"[ERROR] Too many redirects with")
-	# 	exit(1)
-	# except response.exceptions.RequestException as err:
-	# 	logger.error(str(datetime.datetime.now()) + f"[ERROR] Requests had RequestException: {err}")
-	# 	exit(1)
-
-	# if response and response.status_code != 200:
-	# 	logger.error(f"Response returned a {response.status_code}")
-	# 	exit(1)
-
 
 ## Member join ##
 # when new member joins server, log it into log file 
