@@ -54,53 +54,45 @@ def is_student(n_number):
 	try:
 		response = requests.post(user_url, json={"username": f"{n_number}@unf.edu"}, timeout=10)
 		user_response = response.json()
-	except response.exceptions.HTTPError as err:
-		logger.error(str(datetime.datetime.now()) + f"[ERROR] HTTP error exception occurred while querying: {err}")
-		exit(1)
-	except response.exceptions.TooManyRedirects:
-		logger.error(str(datetime.datetime.now()) + f"[ERROR] Too many redirects with")
-		exit(1)
-	except response.exceptions.RequestException as err:
-		logger.error(str(datetime.datetime.now()) + f"[ERROR] Requests had RequestException: {err}")
-		exit(1)
+		is_valid_user = user_response["IfExistsResult"] == 0
 
-	if response and response.status_code != 200:
-		logger.error(f"Response returned a {response.status_code}")
-		exit(1)
+		response =	requests.get(f"{faculty_url}{n_number}")
+		faculty_response = response.json()
+
+		if not is_valid_user:
+			return StudentResult.NOT_FOUND
+		else:
+			if (len(faculty_response["payload"]) > 0) and (faculty_response["payload"][0]["isFaculty"] == True):
+				logger.info(str(datetime.datetime.now()) + f"[INFO] {n_number} is faculty.")
+				return StudentResult.FACULTY
+			else:
+				logger.info(str(datetime.datetime.now()) + f"[INFO] {n_number} is a student.")
+				return StudentResult.STUDENT
 
 
-	is_valid_user = user_response["IfExistsResult"] == 0
-	if not is_valid_user:
-		logger.info(str(datetime.datetime.now()) + f"[INFO] {n_number} is not a student.")
+	except Exception as err:
+		logger.error(str(datetime.datetime.now()) + f"{err}")
 		return StudentResult.NOT_FOUND
-	else:
-		logger.info(str(datetime.datetime.now()) + f"[INFO] {n_number} is a student.")
-		return StudentResult.STUDENT
+
+
 
 		
-	try:
-		response =	response.get(f"{faculty_url}{n_number}")
-		faculty_response = response.json()
-	except response.exceptions.HTTPError as err:
-		logger.error(str(datetime.datetime.now()) + f"[ERROR] HTTP error exception occurred while querying: {err}")
-		exit(1)
-	except response.exceptions.TooManyRedirects:
-		logger.error(str(datetime.datetime.now()) + f"[ERROR] Too many redirects with")
-		exit(1)
-	except response.exceptions.RequestException as err:
-		logger.error(str(datetime.datetime.now()) + f"[ERROR] Requests had RequestException: {err}")
-		exit(1)
+	# try:
+	# 	response =	response.get(f"{faculty_url}{n_number}")
+	# 	faculty_response = response.json()
+	# except response.exceptions.HTTPError as err:
+	# 	logger.error(str(datetime.datetime.now()) + f"[ERROR] HTTP error exception occurred while querying: {err}")
+	# 	exit(1)
+	# except response.exceptions.TooManyRedirects:
+	# 	logger.error(str(datetime.datetime.now()) + f"[ERROR] Too many redirects with")
+	# 	exit(1)
+	# except response.exceptions.RequestException as err:
+	# 	logger.error(str(datetime.datetime.now()) + f"[ERROR] Requests had RequestException: {err}")
+	# 	exit(1)
 
-	if response and response.status_code != 200:
-		logger.error(f"Response returned a {response.status_code}")
-		exit(1)
-
-	if (len(faculty_response["payload"]) > 0) and (faculty_response["payload"][0]["isFaculty"] == True):
-		logger.info(str(datetime.datetime.now()) + f"[INFO] {n_number} is faculty.")
-		return StudentResult.FACULTYj
-	else: 
-		logger.info(str(datetime.datetime.now()) + f"[INFO] {n_number} is not a student, nor faculty.")
-		return StudentResult.NOT_FOUND
+	# if response and response.status_code != 200:
+	# 	logger.error(f"Response returned a {response.status_code}")
+	# 	exit(1)
 
 
 ## Member join ##
@@ -131,6 +123,8 @@ async def on_message(message):
 		return
 
 	# set bot logging channel
+	# prod channel ID 623862015781502976
+	# test channel ID 623860915749781523
 	log_channel = await client.fetch_channel("623862015781502976")
 
 	# set Security Intern role id
