@@ -30,16 +30,6 @@ logger = logging.getLogger("Custom")
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
-# check for config file
-# try:
-# 	config_file = open('config.txt', 'r')
-# 	file_contents = config_file.readlines()
-# 	config_file.close()
-# 	token = file_contents[0].strip()
-# except:
-# 	logger.info(str(datetime.datetime.now()) + " [ERROR] no config file found. Exiting...")
-# 	exit()
-
 try: 
 	token = os.getenv("TOKEN")
 except:
